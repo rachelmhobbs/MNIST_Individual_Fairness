@@ -13,7 +13,7 @@ def plot_metrics(metrics_data, config, display=False):
         config: configuration dictionary for network parameters
         display: Boolean for if plots should be displayed during runtime or not. Default False.
     '''
-    pp = PdfPages(os.path.join(config["model_dir"],"graphs_2.pdf"))
+    pp = PdfPages(os.path.join(config["model_dir"],"example_evalution_graphs.pdf"))
 
     #Plot loss
     min_test_loss = min(metrics_data["test_loss"])
