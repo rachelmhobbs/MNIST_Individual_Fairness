@@ -68,11 +68,13 @@ def train(config):
         metrics["class_{}_rec".format(i)] = [] #recall
         metrics["class_{}_f1".format(i)] = []
 
+    #reset all tf graphs to reassure no old graphs are still alive
+    tf.reset_default_graph()
+
     mnist = input_data.read_data_sets("../data")
     model = MNISTModel(config) #configure MNIST DNN model
 
-    #reset all tf graphs to reassure no old graphs are still alive
-    tf.reset_default_graph()
+
 
     num_batches = mnist.train.num_examples // config["batch_size"]
     init = tf.global_variables_initializer()
@@ -92,15 +94,16 @@ def train(config):
                 X_batch, y_batch = mnist.train.next_batch(config["batch_size"])
 
                 #X_batch, y_batch, _, _= remove_class(X_batch, y_batch, 5, percentage=.99)
-                X_batch, y_batch, _, _ = remove_class(X_batch, y_batch, 3, percentage=.99)
+                for number in config["removed_classes"]:
+                    X_batch, y_batch, _, _ = remove_class(X_batch, y_batch, number, percentage=config["removed_perc"])
 
                 training_dict = {model.x:X_batch, model.y:y_batch}
-                sess.run(model.training_op, feed_dict=training_dict)
+                sess.run(model.training_op, feed_dict=training_dict)    #train model
 
                 if(config["lipschitz_constraint"] == True):
                     sess.run([model.w1_projection, model.w2_projection, model.w3_projection])
 
-                #calculate runtime loss and accuracy for training set 
+                #calculate runtime loss and accuracy for training set
                 train_loss_accum+=sess.run(model.loss, feed_dict=training_dict)
                 train_acc_accum+= sess.run(model.accuracy, feed_dict=training_dict)
 
@@ -127,7 +130,18 @@ def train(config):
         metrics["confusion_matrix"] = sess.run(model.confusion_matrix, feed_dict={model.x:mnist.validation.images, model.y:mnist.validation.labels})
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
+
+def hyperparameter_gridsearch():
+    '''
+    Search a subspace of various hyperparameters using grid search and save all of the graph data/models
+    '''
+    pass
+
+
 if __name__ == "__main__":
-    config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lamda1":0.4, "lamda2":0.4, "lamda3":0.4,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":10, "lipschitz_constraint":False, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition"}
+    config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
+                "learning_rate":0.01, "batch_size":124, "num_epochs":40, "removed_classes":[4], "removed_perc": 0.99, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition",
+                "graph_pdf_file":"example_evalution_graphs_0.pdf"}
+    hyperparameters = {"lamda1":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "lamda2":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "lamda3":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]}
+
     train(config)
