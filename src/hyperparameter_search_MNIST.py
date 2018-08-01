@@ -69,7 +69,7 @@ def train(config):
         metrics["class_{}_f1".format(i)] = []
 
     mnist = input_data.read_data_sets("../data")
-    model = MNISTModel(config) #configure MNIST DNN model 
+    model = MNISTModel(config) #configure MNIST DNN model
 
     num_batches = mnist.train.num_examples // config["batch_size"]
     init = tf.global_variables_initializer()
@@ -77,7 +77,10 @@ def train(config):
         init.run()
         for epoch in range(config["num_epochs"]):
             #reset local variables for class precision
+            '''
             sess.run([model.precision_vars_init[c] for c in range(config["outputs"])])
+            sess.run([model.recall_vars_init[k] for k in range(config["outputs"])])
+            '''
             train_loss_accum = 0
             train_acc_accum = 0
 
@@ -108,29 +111,16 @@ def train(config):
             for i in range(config["outputs"]):
                 #compute single class accuracy, precision, recall, and f1 score
                 X_batch, y_batch = feed_single_class(mnist.validation.images, mnist.validation.labels, i, config["outputs"])
-                metrics["class_{}_acc".format(i)].append(sess.run(model.class_accuracy,  feed_dict={model.number_class:i, model.x:X_batch, model.y:y_batch}))
-                metrics["class_{}_prec".format(i)].append(sess.run(model.precision_op[i], feed_dict={model.number_class:i, model.x:X_batch, model.y:y_batch}))
-                metrics["class_{}_rec".format(i)].append(sess.run(model.precision_op[i], feed_dict={model.number_class:i, model.x:X_batch, model.y:y_batch}))
-                precision = metrics["class_{}_prec".format(i)][-1]
-                recall = metrics["class_{}_rec".format(i)][-1]
-
-                #compute f1 score for each number category(class)
-                f1 = 0
-                if( recall + precision != 0.0):
-                    f1 = (2 * precision * recall) / (precision + recall)
-                metrics["class_{}_f1".format(i)].append(f1)
-
-                print("Class", i, "Accuracy:", metrics["class_{}_acc".format(i)][-1],
-                    "Precision", metrics["class_{}_prec".format(i)][-1], "Recall", metrics["class_{}_rec".format(i)][-1],
-                    "F1_score", metrics["class_{}_f1".format(i)][-1])
-
+                metrics["class_{}_acc".format(i)].append(sess.run(model.accuracy,  feed_dict={model.number_class:i, model.x:X_batch, model.y:y_batch}))
+                print("Class", i, "Accuracy:", metrics["class_{}_acc".format(i)][-1])
 
             print("Test Accuracy:", metrics["test_acc"][-1])
             print("Training Progress {:2.1%}".format(float((epoch+1)/config["num_epochs"])), end="\n", flush=True)
-
-        MNIST_plots.plot_metrics(metrics, config, display=False)
-        return(metrics)
+        
+        metrics["confusion_matrix"] = sess.run(model.confusion_matrix, feed_dict={model.x:mnist.validation.images, model.y:mnist.validation.labels})
+    MNIST_plots.plot_metrics(metrics, config, display=False)
+    return(metrics)
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lamda1":0.4, "lamda2":0.4, "lamda3":0.4,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":10, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\\fairness\data_aquisition"}
+                "learning_rate":0.01, "batch_size":124, "num_epochs":10, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_aquisition"}
     train(config)

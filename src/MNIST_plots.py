@@ -52,8 +52,29 @@ def plot_metrics(metrics_data, config, display=False):
     plt.hlines(config["lamda3"], xmin=0, xmax=config["num_epochs"], colors="r", linestyle='dashed', linewidth=4, label="Lamda3="+str(config["lamda3"]))
     plt.legend()
     pp.savefig()
+
+    #plot individual class Accuracy
+    plt.figure(4)
+    plt.grid(True)
+    plt.title("Individual Class Accuracy")
+    plt.ylim(ymin=0, ymax=1.0)
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    for i in range(config["outputs"]):
+        plt.plot(metrics_data["class_{}_acc".format(i)], label="Class_{}".format(i))
+    plt.legend()
+    pp.savefig()
+
+    #plot confusion matrix as matrix image
+    plt.figure(5)
+    plt.title("Confusion Matrix")
+    plt.matshow(metrics_data["confusion_matrix"], cmap=plt.cm.jet)
+    cbr = plt.colorbar()
+    cbr.set_label("Number of Predictions Mapped to Label")
+    plt.xlabel("Predictions")
+    plt.ylabel("Labels")
+    pp.savefig()
+
     pp.close()
-
-
     if(display):
         plt.show()

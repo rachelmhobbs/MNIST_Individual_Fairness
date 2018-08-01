@@ -56,22 +56,5 @@ class MNISTModel:
             self.class_predictions = tf.equal(self.number_class, self.predictions)
             self.class_accuracy = tf.reduce_mean(tf.cast(tf.equal(self.class_labels, self.class_predictions), tf.float32))
 
-        with tf.name_scope("class_precision"):
-            labels = tf.one_hot(self.y, depth=self.config["outputs"])
-            predictions = tf.one_hot(self.predictions, depth=self.config["outputs"])
-            self.precision, self.precision_op, self.precision_vars, self.precision_vars_init = [], [], [], []
-            for c in range(self.config["outputs"]):
-                precision, precision_op = tf.metrics.precision(labels=labels, predictions=predictions, name="class_{}".format(c))
-                self.precision.append(precision)
-                self.precision_op.append(precision_op)
-                self.precision_vars.append(tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES, scope="class_precision/class_{}".format(c)))
-                self.precision_vars_init.append(tf.variables_initializer(var_list=self.precision_vars[c]))
-
-        with tf.name_scope("class_recall"):
-            self.recall, self.recall_op, self.recall_vars, self.recall_vars_init = [], [], [], []
-            for c in range(self.config["outputs"]):
-                recall, recall_op = tf.metrics.recall(labels=labels, predictions=predictions, name="class_{}".format(c))
-                self.recall.append(recall)
-                self.recall_op.append(recall_op)
-                self.recall_vars.append(tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES, scope="class_recall/class_{}".format(c)))
-                self.recall_vars_init.append(tf.variables_initializer(var_list=self.recall_vars[c]))
+        with tf.name_scope("confusion_matrix"):
+            self.confusion_matrix = tf.confusion_matrix(labels=self.y, predictions=self.predictions, num_classes=self.config["outputs"], name="confusion_matrix")
