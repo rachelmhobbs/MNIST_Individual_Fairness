@@ -71,6 +71,9 @@ def train(config):
     mnist = input_data.read_data_sets("../data")
     model = MNISTModel(config) #configure MNIST DNN model
 
+    #reset all tf graphs to reassure no old graphs are still alive
+    tf.reset_default_graph()
+
     num_batches = mnist.train.num_examples // config["batch_size"]
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
@@ -93,7 +96,11 @@ def train(config):
 
                 training_dict = {model.x:X_batch, model.y:y_batch}
                 sess.run(model.training_op, feed_dict=training_dict)
-                #sess.run([model.w1_projection, model.w2_projection, model.w3_projection])
+
+                if(config["lipschitz_constraint"] == True):
+                    sess.run([model.w1_projection, model.w2_projection, model.w3_projection])
+
+                #calculate runtime loss and accuracy for training set 
                 train_loss_accum+=sess.run(model.loss, feed_dict=training_dict)
                 train_acc_accum+= sess.run(model.accuracy, feed_dict=training_dict)
 
@@ -116,11 +123,11 @@ def train(config):
 
             print("Test Accuracy:", metrics["test_acc"][-1])
             print("Training Progress {:2.1%}".format(float((epoch+1)/config["num_epochs"])), end="\n", flush=True)
-        
+
         metrics["confusion_matrix"] = sess.run(model.confusion_matrix, feed_dict={model.x:mnist.validation.images, model.y:mnist.validation.labels})
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lamda1":0.4, "lamda2":0.4, "lamda3":0.4,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":10, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_aquisition"}
+                "learning_rate":0.01, "batch_size":124, "num_epochs":10, "lipschitz_constraint":False, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition"}
     train(config)

@@ -45,11 +45,15 @@ def plot_metrics(metrics_data, config, display=False):
     plt.xlabel("Epochs")
     plt.ylabel("l"+str(config["p_norm"])+" norm")
     plt.plot(metrics_data["w1_norm"], label="w1_norm")
-    plt.hlines(config["lamda1"], xmin=0, xmax=config["num_epochs"], colors="m", linestyle='dashed', linewidth=4, label="Lamda1="+str(config["lamda1"]))
     plt.plot(metrics_data["w2_norm"], label="w2_norm")
-    plt.hlines(config["lamda2"], xmin=0, xmax=config["num_epochs"], colors="k", linestyle='dashed', linewidth=4, label="Lamda2="+str(config["lamda2"]))
     plt.plot(metrics_data["w3_norm"], label="w3_norm")
-    plt.hlines(config["lamda3"], xmin=0, xmax=config["num_epochs"], colors="r", linestyle='dashed', linewidth=4, label="Lamda3="+str(config["lamda3"]))
+
+    #draw horizontal lines for lipschitz lamda parameters
+    if(config["lipschitz_constraint"] == True):
+        plt.hlines(config["lamda1"], xmin=0, xmax=config["num_epochs"], colors="m", linestyle='dashed', linewidth=4, label="Lamda1="+str(config["lamda1"]))
+        plt.hlines(config["lamda2"], xmin=0, xmax=config["num_epochs"], colors="k", linestyle='dashed', linewidth=4, label="Lamda2="+str(config["lamda2"]))
+        plt.hlines(config["lamda3"], xmin=0, xmax=config["num_epochs"], colors="r", linestyle='dashed', linewidth=4, label="Lamda3="+str(config["lamda3"]))
+
     plt.legend()
     pp.savefig()
 
@@ -61,7 +65,7 @@ def plot_metrics(metrics_data, config, display=False):
     plt.xlabel("Epochs")
     plt.ylabel("Accuracy")
     for i in range(config["outputs"]):
-        plt.plot(metrics_data["class_{}_acc".format(i)], label="Class_{}".format(i))
+        plt.plot(metrics_data["class_{}_acc".format(i)], label="Class_{}".format(i)
     plt.legend()
     pp.savefig()
 
