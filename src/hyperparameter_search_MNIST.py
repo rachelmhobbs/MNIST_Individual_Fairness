@@ -3,6 +3,8 @@ import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 from MNISTModel import MNISTModel
 import MNIST_plots
+import os
+from datetime import datetime
 
 def feed_single_class(X, y, clas, num_classes):
     '''
@@ -48,7 +50,7 @@ def remove_class(X, y, clas, percentage=1.0):
 
     return X_batch, y_batch, number_of_instances_deleted, number_of_class
 
-def train(config):
+def train(config, mnist):
     '''
     Trains the MNIST dataset on the MNISTModel DNN model and evalutes metrics such as
     overall accuracy, class accuracy/precision/recall/f1_score, individual image distances,
@@ -57,6 +59,7 @@ def train(config):
     Parameters:
         config: A dictionary containing all the necessary configuration parameters for the network
                 and training
+        mnist: The read in mnist dataset
     Returns:
         metrics: A dictionary containing a wide variety of metrics gathered over the entire training
                 process
@@ -70,8 +73,9 @@ def train(config):
 
     #reset all tf graphs to reassure no old graphs are still alive
     tf.reset_default_graph()
+    if not mnist:
+        mnist = input_data.read_data_sets("../data")
 
-    mnist = input_data.read_data_sets("../data")
     model = MNISTModel(config) #configure MNIST DNN model
 
 
@@ -128,20 +132,65 @@ def train(config):
             print("Training Progress {:2.1%}".format(float((epoch+1)/config["num_epochs"])), end="\n", flush=True)
 
         metrics["confusion_matrix"] = sess.run(model.confusion_matrix, feed_dict={model.x:mnist.validation.images, model.y:mnist.validation.labels})
+
+        #save tensorflow model
+        model.save_model(sess, config["model_dir"])
+
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
 
-def hyperparameter_gridsearch():
+def hyperparameter_train_constant_lamdas(config, test_dir):
     '''
-    Search a subspace of various hyperparameters using grid search and save all of the graph data/models
+    Train biased mnist with multiple lamda values. Save all the data to test_dir.
     '''
-    pass
+    #extract dataset
+    mnist = input_data.read_data_sets("../data")
+
+    #First train without lipschitz constraints
+    config["lipschitz_constraint"] = False
+
+    save_dir = os.path.join(test_dir, "original")
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    config["model_dir"] = save_dir
+    metrics = train(config, mnist)
+    with open(os.path.join(config["model_dir"], "model_metrics.txt"), "w") as metrics_file:
+        metrics_file.write(str(metrics))
+    with open(os.path.join(config["model_dir"], "model_config.txt"), "w") as config_file:
+        config_file.write(str(config))
+
+    param_keys = ["lamda1", "lamda2", "lamda3"]
+    hyperparameters = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+
+    #train with lipschitz_constraints
+    config["lipschitz_constraint"] = True
+    for hyperparam in hyperparameters:
+
+        print("\n\nConstant Lamdas Training. Current Lamda Val:", hyperparam, "\n\n")
+
+        #update config with new hyperparameters
+        for keys in param_keys:
+            config[keys] = hyperparam
+
+        save_dir = os.path.join(test_dir, "const_lamdas_val_"+str(hyperparam))
+        #if directory does not exist, create it
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        config["model_dir"] = save_dir
+
+        #train model
+        metrics = train(config, mnist)
+        with open(os.path.join(config["model_dir"], "model_metrics.txt"), "w") as metrics_file:
+            metrics_file.write(str(metrics))
+        with open(os.path.join(config["model_dir"], "model_config.txt"), "w") as config_file:
+            config_file.write(str(config))
+
 
 
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":40, "removed_classes":[4], "removed_perc": 0.99, "model_dir":"C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition",
-                "graph_pdf_file":"example_evalution_graphs_0.pdf"}
-    hyperparameters = {"lamda1":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "lamda2":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], "lamda3":[0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]}
-
-    train(config)
+                "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
+                "graph_pdf_file":"graphs.pdf"}
+    #train(config)
+    time_now = datetime.now()
+    hyperparameter_train_constant_lamdas(config, "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_" + time_now.strftime("%Y_%m_%d_%H_%M"))

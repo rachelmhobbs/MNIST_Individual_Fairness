@@ -1,13 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import tf_helper_functions as tf_helper
+import os
 
 class MNISTModel:
 
     def __init__(self, config):
         self.config = config
         self.build_model()
-
+        self.saver = tf.train.Saver()
     def build_model(self):
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.config["inputs"]])
@@ -58,3 +59,5 @@ class MNISTModel:
 
         with tf.name_scope("confusion_matrix"):
             self.confusion_matrix = tf.confusion_matrix(labels=self.y, predictions=self.predictions, num_classes=self.config["outputs"], name="confusion_matrix")
+    def save_model(self, session, save_dir, file_name="model.ckpt"):
+        self.saver.save(session, os.path.join(save_dir, file_name))
