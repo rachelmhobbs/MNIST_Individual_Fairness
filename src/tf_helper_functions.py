@@ -69,3 +69,13 @@ def lipschitz_projection(weights, p_norm, lamda):
     weights_projection = tf.multiply(projection_parameter, weights)
 
     return(tf.assign(weights, weights_projection), weights_norm)
+
+def distance_computation(data, p_norm):
+    '''
+    '''
+    dists = np.zeros((data.shape[0], data.shape[0]))
+
+    #broadcasting to do single loop distance computation
+    for i in range(data.shape[0]):
+        dists[i, :] = np.linalg.norm(data-data[i, :], ord=p_norm, axis=1)
+    return(dists)

@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import tf_helper_functions as tf_helper
 from tensorflow.examples.tutorials.mnist import input_data
 from MNISTModel import MNISTModel
 import MNIST_plots
@@ -136,6 +137,19 @@ def train(config, mnist):
         #save tensorflow model
         model.save_model(sess, config["model_dir"])
 
+        #compute distances matrices for each layer
+        input_data = {model.x:mnist.validation.images[:1000], model.y:mnist.validation.labels[:1000]}
+        val_layer1_output = sess.run(model.z1, feed_dict=input_data)
+        val_layer2_output = sess.run(model.z2, feed_dict=input_data)
+        val_layer3_output = sess.run(model.z2, feed_dict=input_data) #layer 3 is befor activation
+        val_softmax_output = sess.run(model.softmax, feed_dict=input_data)
+
+        val_input_data_dists = tf_helper.distance_computation(np.array(mnist.validation.images[:1000]), p_norm=config["p_norm"])
+        val_layer1_dists = tf_helper.distance_computation(val_layer1_output, p_norm=config["p_norm"])
+        val_layer2_dists = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
+        val_layer3_dists = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
+        val_softmax_output = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
+
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
 
@@ -192,6 +206,5 @@ if __name__ == "__main__":
                 "learning_rate":0.01, "batch_size":124, "num_epochs":1, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    #train(config)
     time_now = datetime.now()
     hyperparameter_train_constant_lamdas(config, lamda_hyperparams, "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
