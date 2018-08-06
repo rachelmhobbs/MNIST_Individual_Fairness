@@ -138,17 +138,17 @@ def train(config, mnist):
         model.save_model(sess, config["model_dir"])
 
         #compute distances matrices for each layer
-        input_data = {model.x:mnist.validation.images[:1000], model.y:mnist.validation.labels[:1000]}
+        input_data = {model.x:mnist.validation.images[:10], model.y:mnist.validation.labels[:10]}
         val_layer1_output = sess.run(model.z1, feed_dict=input_data)
         val_layer2_output = sess.run(model.z2, feed_dict=input_data)
-        val_layer3_output = sess.run(model.z2, feed_dict=input_data) #layer 3 is befor activation
+        val_layer3_output = sess.run(model.z3, feed_dict=input_data) #layer 3 is befor activation
         val_softmax_output = sess.run(model.softmax, feed_dict=input_data)
 
-        val_input_data_dists = tf_helper.distance_computation(np.array(mnist.validation.images[:1000]), p_norm=config["p_norm"])
-        val_layer1_dists = tf_helper.distance_computation(val_layer1_output, p_norm=config["p_norm"])
-        val_layer2_dists = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
-        val_layer3_dists = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
-        val_softmax_output = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
+        metrics["val_input_data_dists"] = tf_helper.distance_computation(np.array(mnist.validation.images[:10]), p_norm=config["p_norm"])
+        metrics["val_layer1_dists"] = tf_helper.distance_computation(val_layer1_output, p_norm=config["p_norm"])
+        metrics["val_layer2_dists"] = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
+        metrics["val_layer3_dists"] = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
+        metrics["val_softmax_output"] = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
 
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
@@ -203,7 +203,7 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
 
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":1, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
+                "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     time_now = datetime.now()

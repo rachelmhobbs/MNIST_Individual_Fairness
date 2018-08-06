@@ -70,8 +70,20 @@ def plot_metrics(metrics_data, config, display=False):
     plt.legend()
     pp.savefig()
 
-    #plot confusion matrix as matrix image
+    #Plot the pairwise distance per layer of images fed through trained network.
     plt.figure(5)
+    plt.title("Pairwise Layer Distances")
+    plt.xlabel("Layers")
+    plt.ylabel("{} Distance Metric".format(config["p_norm"]))
+    for i in range(metrics_data["val_layer1_dists"].shape[0]):
+        for j in range(i , metrics_data["val_layer1_dists"].shape[0]):
+            layer_plot_sequence = [metrics_data["val_input_data_dists"][i, j], metrics_data["val_layer1_dists"][i, j], metrics_data["val_layer2_dists"][i, j],
+                                    metrics_data["val_layer3_dists"][i, j], metrics_data["val_softmax_output"][i, j]]
+            plt.plot(["Images", "Layer1", "Layer2", "Layer3", "Softmax"], layer_plot_sequence, linestyle="--", marker="o", linewidth=0.5, markeredgewidth=0.5)
+    pp.savefig()
+
+    #plot confusion matrix as matrix image
+    plt.figure(6)
     plt.title("Confusion Matrix")
     plt.matshow(metrics_data["confusion_matrix"], cmap=plt.cm.jet)
     cbr = plt.colorbar()
@@ -79,6 +91,8 @@ def plot_metrics(metrics_data, config, display=False):
     plt.xlabel("Predictions")
     plt.ylabel("Labels")
     pp.savefig()
+
+
 
     pp.close()
 
