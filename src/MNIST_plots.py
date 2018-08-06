@@ -15,6 +15,7 @@ def plot_metrics(metrics_data, config, display=False):
     '''
     pp = PdfPages(os.path.join(config["model_dir"], config["graph_pdf_file"]))
 
+    print("metrics_keys", metrics_data.keys())
     #Plot loss
     min_test_loss = min(metrics_data["test_loss"])
     plt.figure(1)
@@ -81,5 +82,7 @@ def plot_metrics(metrics_data, config, display=False):
     pp.savefig()
 
     pp.close()
+
     if(display):
         plt.show()
+    plt.close('all')

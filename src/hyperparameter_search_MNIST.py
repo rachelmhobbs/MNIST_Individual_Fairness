@@ -97,7 +97,7 @@ def train(config, mnist):
             for iteration in range(num_batches):
                 X_batch, y_batch = mnist.train.next_batch(config["batch_size"])
 
-                #X_batch, y_batch, _, _= remove_class(X_batch, y_batch, 5, percentage=.99)
+
                 for number in config["removed_classes"]:
                     X_batch, y_batch, _, _ = remove_class(X_batch, y_batch, number, percentage=config["removed_perc"])
 
@@ -160,6 +160,7 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
         config_file.write(str(config))
 
     param_keys = ["lamda1", "lamda2", "lamda3"]
+    del metrics
 
     #train with lipschitz_constraints
     config["lipschitz_constraint"] = True
@@ -183,14 +184,14 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
             metrics_file.write(str(metrics))
         with open(os.path.join(config["model_dir"], "model_config.txt"), "w") as config_file:
             config_file.write(str(config))
-
+        del metrics
 
 
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
+                "learning_rate":0.01, "batch_size":124, "num_epochs":1, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     #train(config)
     time_now = datetime.now()
-    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_" + time_now.strftime("%Y_%m_%d_%H_%M"))
+    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
