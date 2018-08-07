@@ -79,3 +79,14 @@ def distance_computation(data, p_norm):
     for i in range(data.shape[0]):
         dists[i, :] = np.linalg.norm(data-data[i, :], ord=p_norm, axis=1)
     return(dists)
+
+def prediction_mapping(label_data):
+    '''
+    '''
+
+    prediction_map = np.zeros((label_data.shape[0], label_data.shape[0]))
+    
+    for i in range(label_data.shape[0]):
+        prediction_map[i, :] = np.reshape(label_data == label_data[i, :], (label_data.shape[0]))
+
+    return(prediction_map)

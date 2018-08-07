@@ -149,6 +149,8 @@ def train(config, mnist):
         metrics["val_layer2_dists"] = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
         metrics["val_layer3_dists"] = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
         metrics["val_softmax_output"] = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
+        metrics["val_pred_map"] = tf_helper.prediction_mapping(
+                                    np.reshape(np.array(mnist.validation.labels), (-1, 1))[:10])
 
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
@@ -203,7 +205,7 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
 
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
+                "learning_rate":0.01, "batch_size":124, "num_epochs":1, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     time_now = datetime.now()
