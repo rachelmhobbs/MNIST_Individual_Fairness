@@ -88,9 +88,9 @@ def plot_metrics(metrics_data, config, display=False):
                         color="red", linestyle="-", marker=".", linewidth=0.5, markeredgewidth=0.1)
 
     #max distance horizontal lines
-    plt.hlines(y=metrics_data["val_input_data_dists_max"], xmin="Images", xmax="Same Prediction", label="Input data Max. Dist. {:.2f}".format(metrics_data["val_input_data_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
+    plt.hlines(y=metrics_data["val_input_data_dists_max"], xmin="Images", xmax="Same Prediction", label="Images Max. Dist. {:.2f}".format(metrics_data["val_input_data_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_layer1_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer1 Max. Dist. {:.2f}".format(metrics_data["val_layer1_dists_max"]), colors="g", linestyle='dashed', linewidth=1)
-    plt.hlines(y=metrics_data["val_layer2_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer2 Max. Dist. {:.2f}".format(metrics_data["val_layer2_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
+    plt.hlines(y=metrics_data["val_layer2_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer2 Max. Dist. {:.2f}".format(metrics_data["val_layer2_dists_max"]), colors="k", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_layer3_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer3 Max. Dist. {:.2f}".format(metrics_data["val_layer3_dists_max"]), colors="c", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_softmax_output_max"], xmin="Images", xmax="Same Prediction", label="Softmax Max. {:.2f}".format(metrics_data["val_softmax_output_max"]), colors="m", linestyle='dashed', linewidth=1)
 
@@ -109,9 +109,9 @@ def plot_metrics(metrics_data, config, display=False):
             plt.plot(["Images", "Layer1", "Layer2", "Layer3", "Softmax", "Same Prediction"], layer_plot_sequence, linestyle="solid", marker=".", linewidth=0.5, markeredgewidth=0.1)
 
     #max distance value horizontal lines
-    plt.hlines(y=metrics_data["val_input_data_dists_max"], xmin="Images", xmax="Same Prediction", label="Input data Max. Dist. {:.2f}".format(metrics_data["val_input_data_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
+    plt.hlines(y=metrics_data["val_input_data_dists_max"], xmin="Images", xmax="Same Prediction", label="Images Max. Dist. {:.2f}".format(metrics_data["val_input_data_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_layer1_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer1 Max. Dist. {:.2f}".format(metrics_data["val_layer1_dists_max"]), colors="g", linestyle='dashed', linewidth=1)
-    plt.hlines(y=metrics_data["val_layer2_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer2 Max. Dist. {:.2f}".format(metrics_data["val_layer2_dists_max"]), colors="b", linestyle='dashed', linewidth=1)
+    plt.hlines(y=metrics_data["val_layer2_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer2 Max. Dist. {:.2f}".format(metrics_data["val_layer2_dists_max"]), colors="k", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_layer3_dists_max"], xmin="Images", xmax="Same Prediction", label="Layer3 Max. Dist. {:.2f}".format(metrics_data["val_layer3_dists_max"]), colors="c", linestyle='dashed', linewidth=1)
     plt.hlines(y=metrics_data["val_softmax_output_max"], xmin="Images", xmax="Same Prediction", label="Softmax Max. {:.2f}".format(metrics_data["val_softmax_output_max"]), colors="m", linestyle='dashed', linewidth=1)
 

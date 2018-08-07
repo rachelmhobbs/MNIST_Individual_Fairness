@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import tf_helper_functions as tf_helper
 from tensorflow.examples.tutorials.mnist import input_data
 from MNISTModel import MNISTModel
 import MNIST_plots
@@ -50,6 +49,28 @@ def remove_class(X, y, clas, percentage=1.0):
     y_batch = np.delete(y, indicies[:number_of_instances_deleted])
 
     return X_batch, y_batch, number_of_instances_deleted, number_of_class
+
+def distance_computation(data, p_norm):
+    '''
+    '''
+    dists = np.zeros((data.shape[0], data.shape[0]))
+
+    #broadcasting to do single loop distance computation
+    for i in range(data.shape[0]):
+        dists[i, :] = np.linalg.norm(data-data[i, :], ord=p_norm, axis=1)
+    return(dists)
+
+def prediction_mapping(label_data):
+    '''
+    '''
+
+    prediction_map = np.zeros((label_data.shape[0], label_data.shape[0]))
+
+    for i in range(label_data.shape[0]):
+        prediction_map[i, :] = np.reshape(label_data == label_data[i, :], (label_data.shape[0]))
+
+    return(prediction_map)
+
 
 def train(config, mnist):
     '''
@@ -144,19 +165,19 @@ def train(config, mnist):
         val_layer3_output = sess.run(model.z3, feed_dict=input_data) #layer 3 is befor activation
         val_softmax_output = sess.run(model.softmax, feed_dict=input_data)
 
-        metrics["val_input_data_dists"] = tf_helper.distance_computation(np.array(mnist.validation.images[:10]), p_norm=config["p_norm"])
+        metrics["val_input_data_dists"] = distance_computation(np.array(mnist.validation.images[:10]), p_norm=config["p_norm"])
         metrics["val_input_data_dists_max"] = np.amax(metrics["val_input_data_dists"])
-        metrics["val_layer1_dists"] = tf_helper.distance_computation(val_layer1_output, p_norm=config["p_norm"])
+        metrics["val_layer1_dists"] = distance_computation(val_layer1_output, p_norm=config["p_norm"])
         metrics["val_layer1_dists_max"] = np.amax(metrics["val_layer1_dists"])
-        metrics["val_layer2_dists"] = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
+        metrics["val_layer2_dists"] = distance_computation(val_layer2_output, p_norm=config["p_norm"])
         metrics["val_layer2_dists_max"] = np.amax(metrics["val_layer2_dists"])
-        metrics["val_layer3_dists"] = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
+        metrics["val_layer3_dists"] = distance_computation(val_layer3_output, p_norm=config["p_norm"])
         metrics["val_layer3_dists_max"] = np.amax(metrics["val_layer3_dists"])
-        metrics["val_softmax_output"] = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
+        metrics["val_softmax_output"] = distance_computation(val_softmax_output, p_norm=config["p_norm"])
         metrics["val_softmax_output_max"] = np.amax(metrics["val_softmax_output"])
-        metrics["val_pred_map"] = tf_helper.prediction_mapping(
+        metrics["val_pred_map"] = prediction_mapping(
                                     np.reshape(np.array(mnist.validation.labels), (-1, 1))[:10])
-                                    
+
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
 
