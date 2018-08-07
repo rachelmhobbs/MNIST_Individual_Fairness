@@ -145,13 +145,18 @@ def train(config, mnist):
         val_softmax_output = sess.run(model.softmax, feed_dict=input_data)
 
         metrics["val_input_data_dists"] = tf_helper.distance_computation(np.array(mnist.validation.images[:10]), p_norm=config["p_norm"])
+        metrics["val_input_data_dists_max"] = np.amax(metrics["val_input_data_dists"])
         metrics["val_layer1_dists"] = tf_helper.distance_computation(val_layer1_output, p_norm=config["p_norm"])
+        metrics["val_layer1_dists_max"] = np.amax(metrics["val_layer1_dists"])
         metrics["val_layer2_dists"] = tf_helper.distance_computation(val_layer2_output, p_norm=config["p_norm"])
+        metrics["val_layer2_dists_max"] = np.amax(metrics["val_layer2_dists"])
         metrics["val_layer3_dists"] = tf_helper.distance_computation(val_layer3_output, p_norm=config["p_norm"])
+        metrics["val_layer3_dists_max"] = np.amax(metrics["val_layer3_dists"])
         metrics["val_softmax_output"] = tf_helper.distance_computation(val_softmax_output, p_norm=config["p_norm"])
+        metrics["val_softmax_output_max"] = np.amax(metrics["val_softmax_output"])
         metrics["val_pred_map"] = tf_helper.prediction_mapping(
                                     np.reshape(np.array(mnist.validation.labels), (-1, 1))[:10])
-
+                                    
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
 
