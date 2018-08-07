@@ -83,10 +83,10 @@ def plot_metrics(metrics_data, config, display=False):
                                     metrics_data["val_layer3_dists"][i, j], metrics_data["val_softmax_output"][i, j], metrics_data["val_pred_map"][i, j]]
             if(metrics_data["val_pred_map"][i, j] == 1):
                 plt.plot(xLabels, layer_plot_sequence,
-                        color="green", linestyle="--", marker=".", linewidth=0.5, markeredgewidth=0.1)
+                        color="green", linestyle="-", marker=".", linewidth=0.9, markeredgewidth=0.1)
             else:
                 plt.plot(xLabels, layer_plot_sequence,
-                        color="red", linestyle="-", marker=".", linewidth=0.5, markeredgewidth=0.1)
+                        color="red", linestyle="--", marker=".", linewidth=0.4, markeredgewidth=0.1, alpha=0.6)
 
     #max distance horizontal lines
     plt.axhline(y=metrics_data["val_input_data_dists_max"], label="Images Max. Dist. {:.2f}".format(metrics_data["val_input_data_dists_max"]), color="b", linestyle='dashed', linewidth=1, alpha=0.3)
