@@ -263,9 +263,24 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
 
 
 if __name__ == "__main__":
+
+    SAVE_DIR =  "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_"
+
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
                 "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[8], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
+
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     time_now = datetime.now()
-    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, "C:\Machine_Learning\ML Projects\Fairness\MNIST_Individual_Fairness\data_acquisition\\test_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
+    config["p_norm"] = np.inf
+    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, SAVE_DIR + "p_norm_" + str(config["p_norm"]) + "_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
+
+    lamda_hyperparams = [10, 100, 500, 1000, 2000, 3000, 5000, 7000]
+    time_now = datetime.now()
+    config["p_norm"] = 1
+    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, SAVE_DIR + "p_norm_" + str(config["p_norm"]) + "_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
+
+    lamda_hyperparams = [1, 5, 10, 15, 20, 25, 30, 35, 40]
+    time_now = datetime.now()
+    config["p_norm"] = 2
+    hyperparameter_train_constant_lamdas(config, lamda_hyperparams, SAVE_DIR + "p_norm_" + str(config["p_norm"]) + "_" + time_now.strftime("%Y_%m_%d_%H_%M_%S"))
