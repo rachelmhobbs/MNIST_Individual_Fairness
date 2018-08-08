@@ -52,6 +52,16 @@ def remove_class(X, y, clas, percentage=1.0):
 
 def distance_computation(data, p_norm):
     '''
+    Compute the distance between each data point in the data using the p_norm
+    distance. Return a square matrix containing the distances between each data
+    point.
+
+    Parameters:
+        data: A 2D numpy matrix
+        p_norm: The norm to use for distance computation. Valid values include
+                numerical integers (1, 2, ... , N) or np.inf.
+    Returns:
+        dists: A 2D square numpy matrix of shape (N_data_points, N_data_points)
     '''
     dists = np.zeros((data.shape[0], data.shape[0]))
 
@@ -60,19 +70,38 @@ def distance_computation(data, p_norm):
         dists[i, :] = np.linalg.norm(data-data[i, :], ord=p_norm, axis=1)
     return(dists)
 
-def prediction_mapping(label_data):
+def prediction_mapping(predictions):
     '''
+    Compute a 2D matrix containing boolean values for whether or not each pair of
+    predictions are mapped to the same prediction of not
+
+    Parameters:
+        predictions: The predictions (or labels) of the network
+    Returns:
+        prediction_map: A 2D matrix of boolean values.
     '''
 
-    prediction_map = np.zeros((label_data.shape[0], label_data.shape[0]))
+    prediction_map = np.zeros((predictions.shape[0], predictions.shape[0]))
 
-    for i in range(label_data.shape[0]):
-        prediction_map[i, :] = np.reshape(label_data == label_data[i, :], (label_data.shape[0]))
+    for i in range(predictions.shape[0]):
+        prediction_map[i, :] = np.reshape(predictions == predictions[i, :], (predictions.shape[0]))
 
     return(prediction_map)
 #FIX THIS
 def distance_similarity_threshold(layer_output, p_norm):
     '''
+    Calculate the percentage of pairwise distances that are less than or equal
+    to a threshold below the maximum distance value.
+
+    Parameters:
+        layer_output: A 2D matrix numpy matrix
+        p_norm: The norm to use for distance computation. Valid values include
+                numerical integers (1, 2, ... , N) or np.inf.
+    Returns:
+        threshold_count: A list of strings containing the percentage of pairwise
+                         distances less than or equal to a threshold of 10%, 20%,
+                         50%, 75%, and 90% of the max distance in layer_output for
+                         the given p_norm.
     '''
     thresholds = [0.1, 0.25, 0.5, 0.75, 0.9]
     threshold_count = []
@@ -121,10 +150,7 @@ def train(config, mnist):
         init.run()
         for epoch in range(config["num_epochs"]):
             #reset local variables for class precision
-            '''
-            sess.run([model.precision_vars_init[c] for c in range(config["outputs"])])
-            sess.run([model.recall_vars_init[k] for k in range(config["outputs"])])
-            '''
+
             train_loss_accum = 0
             train_acc_accum = 0
 
@@ -217,6 +243,16 @@ def train(config, mnist):
 def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
     '''
     Train biased mnist with multiple lamda values. Save all the data to test_dir.
+
+    Parameters:
+        config: A dictionary containing parameters necessary for construction and
+                implementation of the fully connected network.
+        hyperparameters: A list of lamda hyperparameter values to iterate through
+                        for training.
+        test_dir: The directroy to save each training hyperparameter test
+
+    Returns:
+        N/A
     '''
     #extract dataset
     mnist = input_data.read_data_sets("../data")
