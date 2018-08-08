@@ -16,23 +16,23 @@ class MNISTModel:
         with tf.name_scope("dnn_model"):
 
             self.w1 = tf_helper.weights([self.config["inputs"], self.config["hidden1"]], name="w1")
-            b1 = tf_helper.bias([self.config["hidden1"]], name="b1")
-            z1 = tf_helper.dense_layer(self.x, self.w1, b1, activation=tf.nn.relu)
+            self.b1 = tf_helper.bias([self.config["hidden1"]], name="b1")
+            self.z1 = tf_helper.dense_layer(self.x, self.w1, self.b1, activation=tf.nn.relu)
 
             self.w2 = tf_helper.weights([self.config["hidden1"], self.config["hidden2"]], name="w2")
-            b2 = tf_helper.bias([self.config["hidden2"]], name="b2")
-            z2 = tf_helper.dense_layer(z1, self.w2, b2, activation=tf.nn.relu)
+            self.b2 = tf_helper.bias([self.config["hidden2"]], name="b2")
+            self.z2 = tf_helper.dense_layer(self.z1, self.w2, self.b2, activation=tf.nn.relu)
 
             self.w3 = tf_helper.weights([self.config["hidden2"], self.config["outputs"]], name="w3")
-            b3 = tf_helper.bias([self.config["outputs"]], name="b3")
-            z3 = tf_helper.dense_layer(z2, self.w3, b3, activation=None)
+            self.b3 = tf_helper.bias([self.config["outputs"]], name="b3")
+            self.z3 = tf_helper.dense_layer(self.z2, self.w3, self.b3, activation=None)
 
         with tf.name_scope("loss"):
             self.y = tf.placeholder(dtype=tf.int32, shape=None)
-            self.xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y, logits=z3)
+            self.xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y, logits=self.z3)
             self.loss = tf.reduce_mean(self.xentropy, name="loss")
 
-            self.softmax = tf.nn.softmax(z3)
+            self.softmax = tf.nn.softmax(self.z3)
             self.prediction_perc, predictions = tf.nn.top_k(self.softmax, k=1, name="predictions")
             self.predictions = tf.reshape(tf.cast(predictions, tf.int32), shape=[-1])
 
@@ -47,7 +47,7 @@ class MNISTModel:
             self.training_op = optimizer.minimize(self.loss)
 
         with tf.name_scope("accuracy"):
-            self.correct_predicitions = tf.nn.in_top_k(z3, self.y, 1)
+            self.correct_predicitions = tf.nn.in_top_k(self.z3, self.y, 1)
             #self.accuracy = tf.reduce_mean(tf.cast(self.correct_predicitions, tf.float32))
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.predictions, self.y), tf.float32))
 
