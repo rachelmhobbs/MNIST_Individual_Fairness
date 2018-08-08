@@ -70,7 +70,20 @@ def prediction_mapping(label_data):
         prediction_map[i, :] = np.reshape(label_data == label_data[i, :], (label_data.shape[0]))
 
     return(prediction_map)
+#FIX THIS
+def distance_similarity_threshold(layer_output, p_norm):
+    '''
+    '''
+    thresholds = [0.1, 0.25, 0.5, 0.75, 0.9]
+    threshold_count = []
+    for thresh in thresholds:
+        layer_output_dist = np.reshape(distance_computation(layer_output, p_norm=p_norm), (-1))
+        max_dist = np.amax(layer_output_dist)
+        count = np.count_nonzero(layer_output_dist <= (thresh * max_dist))/2 #divide by 2 since matrix of dist duplicates over diagonal
+        count = (count / (layer_output_dist.shape[0]/2))
+        threshold_count.append("{}% threshold: {}%".format(100*thresh, 100*count))
 
+    return(threshold_count)
 
 def train(config, mnist):
     '''
@@ -158,7 +171,7 @@ def train(config, mnist):
         #save tensorflow model
         model.save_model(sess, config["model_dir"])
 
-        #compute distances matrices for each layer
+        #compute distances matrices for each layer with a subset of 20 images
         input_data = {model.x:mnist.validation.images[:20], model.y:mnist.validation.labels[:20]}
         val_layer1_output = sess.run(model.z1, feed_dict=input_data)
         val_layer2_output = sess.run(model.z2, feed_dict=input_data)
@@ -177,6 +190,26 @@ def train(config, mnist):
         metrics["val_softmax_output_max"] = np.amax(metrics["val_softmax_output"])
         metrics["val_pred_map"] = prediction_mapping(
                                     np.reshape(np.array(mnist.validation.labels), (-1, 1))[:20])
+
+        #compute distances matrices for each layer with entire validation set
+        input_data = {model.x:mnist.validation.images, model.y:mnist.validation.labels}
+        val_layer1_output = sess.run(model.z1, feed_dict=input_data)
+        val_layer2_output = sess.run(model.z2, feed_dict=input_data)
+        val_layer3_output = sess.run(model.z3, feed_dict=input_data) #layer 3 is befor activation
+        val_softmax_output = sess.run(model.softmax, feed_dict=input_data)
+
+        input_data_thresholds = distance_similarity_threshold(mnist.validation.images, p_norm=config["p_norm"])
+        val_layer1_thresholds = distance_similarity_threshold(val_layer1_output, p_norm=config["p_norm"])
+        val_layer2_thresholds = distance_similarity_threshold(val_layer2_output, p_norm=config["p_norm"])
+        val_layer3_thresholds = distance_similarity_threshold(val_layer3_output, p_norm=config["p_norm"])
+        val_softmax_thresholds = distance_similarity_threshold(val_softmax_output, p_norm=config["p_norm"])
+
+        with open(os.path.join(config["model_dir"], "threshold_metrics.txt"), "a") as file:
+            file.write("Input Images" +str(input_data_thresholds) + '\n')
+            file.write("Layer1" + str(val_layer1_thresholds) + '\n')
+            file.write("Layer2" + str(val_layer2_thresholds) + '\n')
+            file.write("Layer3" + str(val_layer3_thresholds) + '\n')
+            file.write("Softmax" + str(val_softmax_thresholds) + '\n')
 
     MNIST_plots.plot_metrics(metrics, config, display=False)
     return(metrics)
@@ -231,7 +264,7 @@ def hyperparameter_train_constant_lamdas(config, hyperparameters, test_dir):
 
 if __name__ == "__main__":
     config = {"inputs":28*28, "hidden1":300, "hidden2":100, "outputs":10, "p_norm":np.inf, "lipschitz_constraint":False, "lamda1":0.25, "lamda2":0.25, "lamda3":0.25,
-                "learning_rate":0.01, "batch_size":124, "num_epochs":1, "removed_classes":[4], "removed_perc": 0.95, "model_dir":"../data_acquisition",
+                "learning_rate":0.01, "batch_size":124, "num_epochs":30, "removed_classes":[8], "removed_perc": 0.95, "model_dir":"../data_acquisition",
                 "graph_pdf_file":"graphs.pdf"}
     lamda_hyperparams = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     time_now = datetime.now()
